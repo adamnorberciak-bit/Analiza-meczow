@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analiza Meczów</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#101827;color:white;font-family:Arial,sans-serif}header{text-align:center;padding:24px;background:#1d2c43}h1{color:#6ee7b7}main{max-width:650px;margin:auto;padding:16px}section{background:#1d2c43;padding:18px;margin-bottom:16px;border-radius:12px}label{display:block;margin:12px 0 5px}input,select,textarea{width:100%;padding:12px;background:#101827;color:white;border:1px solid #718096;border-radius:8px;font-size:16px}button{width:100%;padding:13px;margin-top:14px;background:#10b981;border:0;border-radius:8px;font-size:16px;font-weight:bold}.match{background:#2a3c56;padding:14px;border-radius:9px;margin-top:12px}small,p{color:#cbd5e1}.remove{background:#f87171}
+</style>
+</head>
+<body>
+<header><h1>⚽ Analiza Meczów 🏒</h1><p>Twoja aplikacja sportowa</p></header>
+<main>
+<section><h2>Dodaj mecz</h2><label>Sport</label><select id="sport" onchange="setLeagues()"><option value="football">Piłka nożna</option><option value="hockey">Hokej</option></select><label>Liga</label><select id="league"></select><label>Gospodarze</label><input id="home" placeholder="Np. Arsenal"><label>Goście</label><input id="away" placeholder="Np. Liverpool"><label>Data (opcjonalnie)</label><input id="date" type="date"><button onclick="addMatch()">Dodaj mecz</button></section>
+<section><h2>Lista meczów</h2><div id="matches"></div></section>
+<section><p>Pierwsza wersja: mecze i notatki zapisują się lokalnie w przeglądarce. Automatyczne statystyki dodamy później.</p></section>
+</main>
+<script>
+const leagues={football:["Anglia - Premier League","Hiszpania - La Liga","Włochy - Serie A","Niemcy - Bundesliga","Francja - Ligue 1","Polska - Ekstraklasa","Liga Mistrzów","Puchary krajowe"],hockey:["NHL","Szwecja - SHL"]};
+const el=id=>document.getElementById(id);
+let games=[];
+try{games=JSON.parse(localStorage.getItem("myMatches")||"[]");if(!Array.isArray(games))games=[];}catch(e){games=[];}
+function setLeagues(){el("league").replaceChildren();leagues[el("sport").value].forEach(name=>{const option=document.createElement("option");option.value=name;option.textContent=name;el("league").appendChild(option);});}
+function save(){localStorage.setItem("myMatches",JSON.stringify(games));}
+function addMatch(){const home=el("home").value.trim();const away=el("away").value.trim();if(!home||!away){alert("Wpisz gospodarzy i gości");return;}games.push({home,away,league:el("league").value,date:el("date").value,notes:""});save();el("home").value="";el("away").value="";el("date").value="";render();}
+function render(){const box=el("matches");box.replaceChildren();if(!games.length){const p=document.createElement("p");p.textContent="Nie masz jeszcze zapisanych meczów.";box.appendChild(p);}games.forEach((game,index)=>{const card=document.createElement("div");card.className="match";const title=document.createElement("h3");title.textContent=game.home+" - "+game.away;card.appendChild(title);const info=document.createElement("small");info.textContent=game.league+" "+game.date;card.appendChild(info);const notes=document.createElement("textarea");notes.placeholder="Twoje notatki i analiza";notes.value=game.notes||"";notes.oninput=()=>{game.notes=notes.value;save();};card.appendChild(notes);const remove=document.createElement("button");remove.className="remove";remove.textContent="Usuń mecz";remove.onclick=()=>{games.splice(index,1);save();render();};card.appendChild(remove);box.appendChild(card);});}
+setLeagues();render();
+</script>
+</body>
+</html>
